@@ -4,19 +4,19 @@ from torch.utils.data import DataLoader
 import torch.nn.functional as F
 import math
 
-
-def stationary_distribution(prob):
-  evals, evecs = np.linalg.eig(prob.T)
-  evec1 = evecs[:,np.isclose(evals, 1)]
-
-  #Since np.isclose will return an array, we've indexed with an array
-  #so we still have our 2nd axis.  Get rid of it, since it's only size 1.
-  evec1 = evec1[:,0]
-
-  stationary = evec1 / evec1.sum()
-
-  #eigs finds complex eigenvalues and eigenvectors, so you'll want the real part.
-  return stationary.real
+def stationary_distribution(P):
+    if len(P.shape) == 2:
+      pi = torch.ones((1, P.size(1)), device=P.device, dtype=P.dtype) / P.size(0)
+    elif len(P.shape) == 3:
+      pi = torch.ones((P.size(0), 1, P.size(1)), device=P.device, dtype=P.dtype) / P.size(0)
+    else:
+      raise ValueError(f"P has shape {P.size()}, but P must be 2D or 3D tensor")
+    pi_next = torch.matmul(pi, P)
+    while not torch.allclose(pi_next, pi):
+        pi = pi_next
+        pi_next = torch.matmul(pi, P)
+    pi = torch.matmul(pi_next, P).squeeze()
+    return pi / pi.sum(axis=-1, keepdim=True)
 
 def mean_alg(inp, num_symbols):
   return (torch.bincount(inp, minlength = num_symbols)+1)/(len(inp)+num_symbols)
