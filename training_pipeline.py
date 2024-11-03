@@ -16,13 +16,8 @@ from mingpt.utils import CfgNode as CN
 
 #2-layered attention only transformer
 from mingpt.model import GPT
-from mingpt.model_new import Attention_Only_Transformer
-from mingpt.model_modified_variable_attention import Attention_Only_GPT
-# from mingpt.min_model import min_model
-from mingpt.model_relmlp import Relative_Transformer
-# from mingpt.really_min_model import min_model
-from mingpt.new_min import min_model
-# from mingpt.new_min_twoparam import min_model
+from mingpt.model_rpe import Relative_Transformer
+from mingpt.min_model import min_model
 from mingpt.trainer import Trainer
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -46,6 +41,7 @@ def get_default_config():
     C.batch_size = 64
     C.dataset = None
     C.n = 2
+    C.attention_only = True
     return C
 
 def train(config=get_default_config()):
@@ -68,16 +64,16 @@ def train(config=get_default_config()):
     if "test" in name:
         config.model_type = None
         model = GPT(config)
-    if 'mlp' in name:
-        model = Relative_Transformer(config)
+    # if 'mlp' in name:
+    #     model = Relative_Transformer(config)
     elif 'transformer' in name:
-        model = Attention_Only_Transformer(config)
+        model = Relative_Transformer(config)
     elif 'minimal model' in name:
         model = min_model(config)
+        
 
     trainer = Trainer(train_config, model, train_dataset)
 
-    
     model_history = [deepcopy(model)]
     train_loss = []
     wait = max(train_config.max_iters// 5, 1)
@@ -87,27 +83,11 @@ def train(config=get_default_config()):
         model.v.requires_grad_(False)
     @torch.no_grad
     def batch_end_callback(trainer):
+        # trainer.optimizer.param_groups[0]['lr'] = 2e-1
         train_loss.append(trainer.loss.item())
         if trainer.iter_num % max(train_config.max_iters//num_models, 1) == 0:
             model_history.append(deepcopy(model))
             # torch.save(model.state_dict(), os.path.join(path, 'checkpoints', f'model_{trainer.iter_num}'))
-
-        #     model.test = False
-        # trainer.optimizer.param_groups[1]['lr'] = 1e-1
-        if 'minimal model' in name and "wise" in name:
-            if trainer.iter_num == wait:
-                model.Wv.requires_grad_(False)
-                model.v.requires_grad_(True)
-                model.Wq.requires_grad_(True)
-                # trainer.optimizer.param_groups[0]['lr'] = 1e-1
-                print(model.Wv.weight.cpu().numpy())
-            # if trainer.iter_num == wait * 2:
-            #     trainer.optimizer.param_groups[0]['lr'] = 1e-1
-            #     trainer.optimizer.param_groups[0]['lr'] = 1e-4
-            #     model.v.requires_grad_(True)
-            #     model.Wq.requires_grad_(False)
-            #     print(model.Wq.weight.cpu().numpy())
-        
         if trainer.iter_num % wait == 0:
             print(f"iter_dt {trainer.iter_dt *1000:.2f} ms; iter {trainer.iter_num}: train loss {trainer.loss.item():f}")
     trainer.set_callback('on_batch_end', batch_end_callback)

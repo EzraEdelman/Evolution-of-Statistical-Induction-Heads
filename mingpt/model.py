@@ -84,12 +84,12 @@ class Block(nn.Module):
             act     = NewGELU(),
             dropout = nn.Dropout(config.resid_pdrop),
         ))
-        # m = self.mlp
-        # self.mlpf = lambda x: m.dropout(m.c_proj(m.act(m.c_fc(x)))) # MLP forward
+        m = self.mlp
+        self.mlpf = lambda x: m.dropout(m.c_proj(m.act(m.c_fc(x)))) # MLP forward
 
     def forward(self, x):
         x = x + self.attn(self.ln_1(x))
-        # x = x + self.mlpf(self.ln_2(x))
+        x = x + self.mlpf(self.ln_2(x))
         return x
 
 class GPT(nn.Module):
@@ -113,7 +113,6 @@ class GPT(nn.Module):
         return C
 
     def __init__(self, config):
-        print("MODIFIED TO REMOVE MLPs!!")
         super().__init__()
         assert config.vocab_size is not None
         assert config.block_size is not None

@@ -18,7 +18,7 @@ class ngrams(Dataset):
     """
 
     def __init__(self, split:str, n:int, length = 101, num_symbols = 2, size = torch.iinfo(torch.int).max, last_token_only = False, device = 'cpu'):
-        self.length = length - 1
+        self.length = length
         self.num_symbols = num_symbols
         self.split = split
         assert split in ['train', 'test'], f"split must be 'train' or 'test' not {split}"
@@ -28,6 +28,8 @@ class ngrams(Dataset):
         self.n = n - 1
         self.transition_matrix_gen = torch.distributions.dirichlet.Dirichlet(torch.ones((num_symbols**(n-1),num_symbols), device = device)).sample
         
+        # Compute powers of num_symbols
+        self.powers = self.num_symbols ** torch.arange(self.n - 1, -1, -1, device=device, dtype=torch.long)  # Shape: (n,)
 
         self.conv = torch.tensor([num_symbols ** k for k in range(self.n)])
     def __len__(self):
@@ -109,17 +111,26 @@ class ngrams(Dataset):
         # exit()
         # print()
         return (l * self.conv).sum(axis=1)
+
+    # def single_symbol_convert(self, m):
+    #     if self.n == 1:
+    #         return m.unsqueeze(-1)
+    #     out = torch.zeros((m.size(0), self.n), dtype=torch.long)
     
+    #     for i in range(self.n - 1, -1, -1):
+    #         out[:, i] = m % self.num_symbols
+    #         m = m // self.num_symbols
+    #     return out
+
     def single_symbol_convert(self, m):
         if self.n == 1:
-            return m.unsqeeze(-1)
-        out = torch.zeros((m.size(0), self.n), dtype=torch.long)
-    
-        for i in range(self.n - 1, -1, -1):
-            out[:, i] = m % self.num_symbols
-            m = m // self.num_symbols
+            return m.unsqueeze(-1)
+        # Expand m to match the shape for broadcasting
+        m_expanded = m.unsqueeze(1)  # Shape: (batch_size, 1)
+        # Compute the digits in base num_symbols
+        out = (m_expanded // self.powers) % self.num_symbols  # Shape: (batch_size, n)
         return out
-
+    
 import warnings
 class doubly_stochastic(ngrams):
     def __init__(self, split, length = 101, num_symbols = 2, size = 1000, last_token_only = False, device = 'cpu'):

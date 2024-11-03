@@ -32,6 +32,7 @@ class Attention(nn.Module):
         self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias = False)
         # relative embeddings
         self.wpe = nn.Embedding(config.block_size + 1, config.n_embd, padding_idx = config.block_size)
+        self.attention_only = config.attention_only
 
         # regularization
         self.attn_dropout = nn.Dropout(config.attn_pdrop)
@@ -49,6 +50,17 @@ class Attention(nn.Module):
         pos = torch.maximum(pos, torch.tensor(-1))
         pos[pos==-1] = config.block_size
         self.register_buffer("pos", pos)
+
+        if not config.attention_only:
+            self.ln_2 = nn.LayerNorm(config.n_embd)
+            self.mlp = nn.ModuleDict(dict(
+                c_fc    = nn.Linear(config.n_embd, 4 * config.n_embd),
+                c_proj  = nn.Linear(4 * config.n_embd, config.n_embd),
+                act     = torch.nn.ReLU(),
+                dropout = nn.Dropout(config.resid_pdrop),
+            ))
+            m = self.mlp
+            self.mlpf = lambda x: m.dropout(m.c_proj(m.act(m.c_fc(x)))) # MLP forward
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
@@ -76,10 +88,12 @@ class Attention(nn.Module):
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
         # output projection
-        y = self.resid_dropout(self.c_proj(y))
-        return y + x
+        x = self.resid_dropout(self.c_proj(y)) + x
+        if not self.attention_only:
+            x = self.mlpf(self.ln_2(x)) + x
+        return x
 
-class Attention_Only_Transformer(nn.Module):
+class Relative_Transformer(nn.Module):
     """ Substantially Simplified (and Specialized) Experimental Model """
 
     def __init__(self, config):
@@ -100,7 +114,8 @@ class Attention_Only_Transformer(nn.Module):
         layer_one = Attention(config)
         temp = config.n_head
         config.n_head = 1
-        self.layers = nn.ModuleList([layer_one] + [Attention(config) for i in range(config.n_layer - 1)])
+
+        self.layers = nn.ModuleList([layer_one] + [Attention(config) for layer in range(config.n_layer - 1)])
         config.n_head = temp
         self.ln_f = nn.LayerNorm(config.n_embd)
 
@@ -120,15 +135,11 @@ class Attention_Only_Transformer(nn.Module):
     def _init_weights(self, module):
         if isinstance(module, nn.Linear):
 
-            # torch.nn.init.ones_(module.weight)
-            # with torch.no_grad():
-            #     module.weight *= 0.002
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
             if module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
-            # torch.nn.init.zeros_(module.bias)
         elif isinstance(module, nn.LayerNorm):
             torch.nn.init.zeros_(module.bias)
             torch.nn.init.ones_(module.weight)
@@ -242,8 +253,8 @@ class Attention_Only_Transformer(nn.Module):
             y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
             # output projection
-            y = layer.resid_dropout(layer.c_proj(y))
-            x = x + y
-            
+            x = layer.resid_dropout(layer.c_proj(y)) + x
+            if not layer.attention_only:
+                x = layer.mlpf(layer.ln_2(x)) + x
 
         return attentions, attentions_softmax
