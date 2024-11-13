@@ -151,9 +151,10 @@ class ngramArrows(ngrams):
 
         #generate sequence
         # rand = torch.rand(self.length)
-        output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, device = self.device)
+        output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long)#, device = self.device)
         output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
-        cons = torch.arange(len(transition_matrices), device = self.device) * self.num_symbols ** self.n
+        # cons = torch.arange(len(transition_matrices), device = self.device) * self.num_symbols ** self.n
+        cons = torch.arange(len(transition_matrices)) * self.num_symbols ** self.n
         for ind in range(self.n, self.length):
             if self.n == 1:
                 temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
@@ -161,7 +162,7 @@ class ngramArrows(ngrams):
                 temp = transition_matrices.flatten(end_dim=1)[cons + self.multi_symbol_convert(output[:,ind-self.n:ind])]
             
             output[:,ind] = torch.multinomial(temp,1).squeeze()
-        extended = torch.zeros(output.size(0), output.size(1) * 2, device = output.device)
+        extended = torch.zeros(output.size(0), output.size(1) * 2)#, device = output.device)
         extended[:, ::2] = output+1
 
 
