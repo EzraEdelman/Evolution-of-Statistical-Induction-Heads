@@ -46,7 +46,7 @@ class ngrams(Dataset):
     
     def stationary_distribution(self, transition_matrices):
         if self.n > 1:
-            temp = torch.zeros(transition_matrices[...,0,0].size()+torch.Size((self.num_symbols**(self.n),self.num_symbols**(self.n))), device = self.device)
+            temp = torch.zeros(transition_matrices[...,0,0].size()+torch.Size((self.num_symbols**(self.n),self.num_symbols**(self.n))))#, device = self.device)
             for i in range(self.num_symbols ** self.n):
                 for j in range(self.num_symbols):
                     converted = int((i %self.num_symbols**(self.n - 1)) * self.num_symbols + j)
