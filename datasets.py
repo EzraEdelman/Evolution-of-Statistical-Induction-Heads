@@ -140,6 +140,11 @@ class ngramArrows(ngrams):
         super().__init__(*args, **kwargs)
         self.length = self.length * 2
     
+    def __getitem__(self, index):
+        x, y= self.__get_items__([index])
+        print(x,y)
+        return x[0], y[0]
+
     def __getitems__(self, indices):
         transition_matrices = self.transition_matrix_gen([len(indices)])
         stationary_distributions = self.stationary_distribution(transition_matrices)
