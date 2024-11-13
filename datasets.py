@@ -31,7 +31,8 @@ class ngrams(Dataset):
         self.transition_matrix_gen = torch.distributions.dirichlet.Dirichlet(torch.ones((num_symbols**(n-1),num_symbols), device = device)).sample
         
         # Compute powers of num_symbols
-        self.powers = self.num_symbols ** torch.arange(self.n - 1, -1, -1, device=device, dtype=torch.long)  # Shape: (n,)
+        # self.powers = self.num_symbols ** torch.arange(self.n - 1, -1, -1, device=device, dtype=torch.long)  # Shape: (n,)
+        self.powers = self.num_symbols ** torch.arange(self.n - 1, -1, -1, dtype=torch.long)  # Shape: (n,)
 
         self.conv = torch.tensor([num_symbols ** k for k in range(self.n)])
     def __len__(self):
