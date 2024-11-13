@@ -56,6 +56,7 @@ class ngrams(Dataset):
             return stationary_distribution(transition_matrices)
 
     def __getitem__(self, _):
+        raise NotImplementedError("This method should not be called, use __getitems__ instead")
         transition_matrix = self.transition_matrix_gen()
         stationary = self.stationary_distribution(transition_matrix)
         thresholds = transition_matrix.cumsum(dim = 1).tolist()
