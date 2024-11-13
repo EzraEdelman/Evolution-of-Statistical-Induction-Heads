@@ -55,7 +55,7 @@ def train(config=get_default_config()):
 
     train_config = Trainer.get_default_config()
     train_config.max_iters = config.max_iters
-    train_config.num_workers = 0
+    train_config.num_workers = 8
     train_config.batch_size = config.batch_size
     name = config.model_type.lower()
     if config.learning_rate is not None:
