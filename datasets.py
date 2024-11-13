@@ -8,8 +8,8 @@ from hashlib import sha3_256
 
 
 class ngramArrows(Dataset):
-    def __init__(self, *args):
-        super.__init__(*args)
+    def __init__(self, **args):
+        super.__init__(**args)
         self.length = self.length * 2
         self.num_symbols = self.num_symbols + 1
     
