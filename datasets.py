@@ -7,22 +7,6 @@ import pickle
 from hashlib import sha3_256
 
 
-class ngramArrows(Dataset):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.length = self.length * 2
-        self.num_symbols = self.num_symbols + 1
-    
-    def __getitems__(self, indices):
-        x, y = super().__getitems__(indices)
-        outx = torch.zeros((x.size(0),x.size(1)*2))
-        outx[:, ::2] = x
-        outx[:, 1::2] = self.num_symbols - 1
-        outy = torch.zeros((y.size(0),y.size(1)*2))
-        outy[:, 1::2] = y
-        outy[:, ::2] = self.num_symbols - 1
-        return outx, outy
-
         
 
 def split(tensor):
@@ -149,6 +133,24 @@ class ngrams(Dataset):
         out = (m_expanded // self.powers) % self.num_symbols  # Shape: (batch_size, n)
         return out
     
+
+
+class ngramArrows(ngrams):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.length = self.length * 2
+        self.num_symbols = self.num_symbols + 1
+    
+    def __getitems__(self, indices):
+        x, y = super().__getitems__(indices)
+        outx = torch.zeros((x.size(0),x.size(1)*2))
+        outx[:, ::2] = x
+        outx[:, 1::2] = self.num_symbols - 1
+        outy = torch.zeros((y.size(0),y.size(1)*2))
+        outy[:, 1::2] = y
+        outy[:, ::2] = self.num_symbols - 1
+        return outx, outy
+
 import warnings
 class doubly_stochastic(ngrams):
     def __init__(self, split, length = 101, num_symbols = 2, size = 1000, last_token_only = False, device = 'cpu'):
