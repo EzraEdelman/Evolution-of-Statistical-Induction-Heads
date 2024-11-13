@@ -49,13 +49,14 @@ def train(config=get_default_config()):
     set_seed(config.seed)
     config.device = device
     if config.dataset is None:
+        print("Using ngrams dataset")
         train_dataset = datasets.ngrams('train', config.n, config.block_size+1, config.vocab_size)
     else:
         train_dataset = config.dataset
 
     train_config = Trainer.get_default_config()
     train_config.max_iters = config.max_iters
-    train_config.num_workers = 8
+    train_config.num_workers = 6
     train_config.batch_size = config.batch_size
     name = config.model_type.lower()
     if config.learning_rate is not None:
