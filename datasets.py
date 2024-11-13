@@ -9,7 +9,7 @@ from hashlib import sha3_256
 
 class ngramArrows(Dataset):
     def __init__(self, *args, **kwargs):
-        super.__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.length = self.length * 2
         self.num_symbols = self.num_symbols + 1
     
