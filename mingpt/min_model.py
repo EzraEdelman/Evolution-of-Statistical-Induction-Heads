@@ -18,7 +18,7 @@ class min_model(nn.Module):
         self.register_buffer("bias", torch.tril(torch.ones(self.length, self.length))
                                      .view(1, self.length, self.length) == 0)
         torch.nn.init.constant_(self.v.weight, 0)
-        torch.nn.init.constant_(self.W.weight, 0)
+        torch.nn.init.constant_(self.W.weight, 0.01)
         # torch.nn.init.normal_(self.W.weight, mean=0.02, std=0.02)
         # torch.nn.init.normal_(self.v.weight, mean=0.02, std=0.02)
 
@@ -33,9 +33,11 @@ class min_model(nn.Module):
         # layer one
         pos_embd = self.v(self.pos[:T,:T]).squeeze()
         attention = pos_embd
+        masked_attention = attention.tril(diagonal=0)
         attention.masked_fill(self.bias[:T,:T], float('-inf'))
         attention = F.softmax(attention, dim=-1)
         layer_one = attention @ e
+        # layer_one = masked_attention @ e
 
         # layer two
         attention = e @ self.W(layer_one).transpose(1, 2)
