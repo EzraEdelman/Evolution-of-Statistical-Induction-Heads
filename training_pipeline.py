@@ -87,7 +87,8 @@ def train(config=get_default_config()):
         # trainer.optimizer.param_groups[0]['lr'] = 2e-1
         train_loss.append(trainer.loss.item())
         if trainer.iter_num % max(train_config.max_iters//num_models, 1) == 0:
-            model_history.append(deepcopy(model))
+            pass
+            # model_history.append(deepcopy(model))
             # torch.save(model.state_dict(), os.path.join(path, 'checkpoints', f'model_{trainer.iter_num}'))
         if trainer.iter_num % wait == 0:
             print(f"iter_dt {trainer.iter_dt *1000:.2f} ms; iter {trainer.iter_num}: train loss {trainer.loss.item():f}")
