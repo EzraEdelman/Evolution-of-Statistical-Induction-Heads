@@ -147,7 +147,7 @@ def test_last_token(models, dataset, device, size = 1000):
             break
         
         converted_symbols = dataset.multi_symbol_convert(x[:,1-n:])
-        ground_truth = probs.view(batch_size*num_symbols**(n-1), num_symbols)[torch.arange(batch_size)*num_symbols**(n-1)+converted_symbols].to(device)
+        ground_truth = probs.view(batch_size*num_symbols**(n), num_symbols)[torch.arange(batch_size)*num_symbols**(n-1)+converted_symbols].to(device)
 
         # create guess by m-grams
         mgram_guesses = torch.zeros(n+1, x.shape[0], num_symbols,  device = device)
