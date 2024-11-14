@@ -74,7 +74,7 @@ class ngrams(Dataset):
             y = transition_matrix, torch.tensor(inp[1:], dtype=torch.long)
         else:
             raise ValueError("Invalid split, this should not be possible unless split was changed after initialization")
-        return x, y
+        return tuple(zip(x,y))
 
 
     def __getitems__(self, indices):
