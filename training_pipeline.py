@@ -65,8 +65,12 @@ def train(config=get_default_config()):
         train_config.learning_rate = config.learning_rate
     train_config.device = device
     if "test" in name:
+        temp = config.model_type
         config.model_type = None
+
         model = GPT(config)
+
+        config.model_type = temp
     # if 'mlp' in name:
     #     model = Relative_Transformer(config)
     elif 'transformer' in name:
