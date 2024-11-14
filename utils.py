@@ -12,9 +12,14 @@ def stationary_distribution(P):
     else:
       raise ValueError(f"P has shape {P.size()}, but P must be 2D or 3D tensor")
     pi_next = torch.matmul(pi, P)
+    i = 0
     while not torch.allclose(pi_next, pi):
+        i += 1
         pi = pi_next
         pi_next = torch.matmul(pi, P)
+        if i >= 1000:
+          print("OH NO")
+          exit()
     pi = torch.matmul(pi_next, P).squeeze()
     return pi / pi.sum(axis=-1, keepdim=True)
 
