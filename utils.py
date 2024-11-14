@@ -12,11 +12,11 @@ def stationary_distribution(P):
     else:
       raise ValueError(f"P has shape {P.size()}, but P must be 2D or 3D tensor")
     if P.size(-1) < 5:
-      P_next = torch.linalg.matrix_power(P,2)
-      while not torch.allclose(P, P_next):
-        P = P_next
-        P_next = torch.linalg.matrix_power(P,2)
-      print(P_next[0])
+      P_next = torch.linalg.matrix_power(P,16)
+      # while not torch.allclose(P, P_next):
+      #   P = P_next
+      #   P_next = torch.linalg.matrix_power(P,2)
+      # print(P_next[0])
       return P_next.mean(axis=-1)
 
     pi_next = torch.matmul(pi, P)
