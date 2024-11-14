@@ -134,8 +134,8 @@ def test_last_token(models, dataset, device, size = 1000):
         model.eval()
     loader = DataLoader(dataset, batch_size, num_workers=8, drop_last=False)
     num_samples = len(dataset)
+    size = min(size, num_samples)
     num_batches = size//batch_size
-    print(num_batches, size, batch_size)
     n = dataset.n+1
     size = num_batches * batch_size
 

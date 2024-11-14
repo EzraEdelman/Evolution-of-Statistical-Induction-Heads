@@ -347,7 +347,7 @@ def mixtures(config, num):
     
     sets = [datasets.mixture(base[0], base[1], p) for p in np.arange(0,1+1/(num-1),1/(num-1))]
     test_dataset = datasets.ngrams("test", 2, config.block_size+1, config.vocab_size)
-    dataset_labels = ["Doubly Stochastic", "Unigrams", "Mixture"]
+    # dataset_labels = ["Doubly Stochastic", "Unigrams", "Mixture"]
     norm = matplotlib.colors.Normalize(vmin=0, vmax=1)
 
     # Create a Scalar Mappable for the colormap
