@@ -50,7 +50,7 @@ def train(config=get_default_config()):
     config.device = device
     if config.dataset is None:
         print("Using ngrams dataset")
-        train_dataset = datasets.ngrams('train', config.n, config.block_size+1, config.vocab_size, size=1000)
+        train_dataset = datasets.ngrams('train', config.n, config.block_size+1, config.vocab_size)
     else:
         train_dataset = config.dataset
 
