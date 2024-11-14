@@ -125,7 +125,7 @@ class ngrams(Dataset):
                 y = torch.ones_like(y) * -1
                 y[:, -1] = output[:, -1]
         elif self.split == 'test':
-            y = zip(transition_matrices, output[:, 1:])
+            y = list(zip(transition_matrices, output[:, 1:]))
         else:
             raise ValueError("Invalid split, this should not be possible unless split was changed after initialization")
         return x,y#tuple(zip(x,y))
