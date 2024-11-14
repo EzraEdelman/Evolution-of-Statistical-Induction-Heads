@@ -13,7 +13,7 @@ def stationary_distribution(P):
       raise ValueError(f"P has shape {P.size()}, but P must be 2D or 3D tensor")
     pi_next = torch.matmul(pi, P)
     i = 0
-    while not torch.allclose(pi_next, pi):
+    while not torch.allclose(pi_next, pi, atol = 1e-6):
         i += 1
         pi = pi_next
         pi_next = torch.matmul(pi, P)
