@@ -56,7 +56,7 @@ def train(config=get_default_config()):
 
     train_config = Trainer.get_default_config()
     train_config.max_iters = config.max_iters
-    train_config.num_workers = 6
+    train_config.num_workers = 0
     train_config.batch_size = config.batch_size
     name = config.model_type.lower()
     if config.learning_rate is not None:
@@ -87,8 +87,7 @@ def train(config=get_default_config()):
         # trainer.optimizer.param_groups[0]['lr'] = 2e-1
         train_loss.append(trainer.loss.item())
         if trainer.iter_num % max(train_config.max_iters//num_models, 1) == 0:
-            pass
-            # model_history.append(deepcopy(model))
+            model_history.append(deepcopy(model))
             # torch.save(model.state_dict(), os.path.join(path, 'checkpoints', f'model_{trainer.iter_num}'))
         if trainer.iter_num % wait == 0:
             print(f"iter_dt {trainer.iter_dt *1000:.2f} ms; iter {trainer.iter_num}: train loss {trainer.loss.item():f}")
