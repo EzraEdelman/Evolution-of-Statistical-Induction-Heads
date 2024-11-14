@@ -16,6 +16,7 @@ def stationary_distribution(P):
       while not torch.allclose(P, P_next):
         P = P_next
         P_next = torch.linalg.matrix_power(P,2)
+      print(P_next[0])
       return P_next.mean(axis=-1)
 
     pi_next = torch.matmul(pi, P)
