@@ -21,10 +21,8 @@ def stationary_distribution(P):
       #so we still have our 2nd axis.  Get rid of it, since it's only size 1.
       evec1 = evec1[:,0]
 
-      stationary = evec1 / evec1.sum()
-
       #eigs finds complex eigenvalues and eigenvectors, so you'll want the real part.
-      return torch.from_numpy(stationary.real).pin_memory().to(device, non_blocking=True)
+      return torch.from_numpy((evec1 / evec1.sum()).real).pin_memory().to(device, non_blocking=True)
     pi_next = torch.matmul(pi, P)
     i = 0
     while not torch.allclose(pi_next, pi, atol = 1e-4, rtol = 1e-4):
