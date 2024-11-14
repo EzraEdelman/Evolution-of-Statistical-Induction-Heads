@@ -34,6 +34,25 @@ class ngrams(Dataset):
         self.powers = self.num_symbols ** torch.arange(self.n - 1, -1, -1, device=device, dtype=torch.long)  # Shape: (n,)
 
         self.conv = torch.tensor([num_symbols ** k for k in range(self.n)])
+
+        if self.split == "train":
+            indices = list(range(size))
+            transition_matrices = self.transition_matrix_gen([len(indices)])
+            stationary_distributions = self.stationary_distribution(transition_matrices)
+
+            #generate sequence
+            # rand = torch.rand(self.length)
+            output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long)
+            output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
+            cons = torch.arange(len(transition_matrices)) * self.num_symbols ** self.n
+            for ind in range(self.n, self.length):
+                if self.n == 1:
+                    temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
+                else:
+                    temp = transition_matrices.flatten(end_dim=1)[cons + self.multi_symbol_convert(output[:,ind-self.n:ind])]
+                
+                output[:,ind] = torch.multinomial(temp,1).squeeze()
+            self.output = output.pin_memory().to(device, non_blocking=True)
     def __len__(self):
         return self.size
 
@@ -83,18 +102,21 @@ class ngrams(Dataset):
 
         #generate sequence
         # rand = torch.rand(self.length)
-        output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, device = self.device)
-        output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
-        cons = torch.arange(len(transition_matrices), device = self.device) * self.num_symbols ** self.n
-        for ind in range(self.n, self.length):
-            if self.n == 1:
-                temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
-            else:
-                temp = transition_matrices.flatten(end_dim=1)[cons + self.multi_symbol_convert(output[:,ind-self.n:ind])]
-            
-            output[:,ind] = torch.multinomial(temp,1).squeeze()
+        if self.split == "train":
+            output = self.output[indices]
+        else:
+            output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, device = self.device)
+            output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
+            cons = torch.arange(len(transition_matrices), device = self.device) * self.num_symbols ** self.n
+            for ind in range(self.n, self.length):
+                if self.n == 1:
+                    temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
+                else:
+                    temp = transition_matrices.flatten(end_dim=1)[cons + self.multi_symbol_convert(output[:,ind-self.n:ind])]
+                
+                output[:,ind] = torch.multinomial(temp,1).squeeze()
 
-        x = output[:, :-1]
+            x = output[:, :-1]
 
         if self.split == 'train':
             y = output[:, 1:]
