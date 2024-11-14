@@ -19,7 +19,7 @@ class ngrams(Dataset):
     Dataset for the in context markov learning. Each example is a series of outputs from a markov chain
     """
 
-    def __init__(self, split:str, n:int, length = 101, num_symbols = 2, size = torch.iinfo(torch.int).max, last_token_only = False, device = 'cpu'):
+    def __init__(self, split:str, n:int, length = 101, num_symbols = 2, size = 1000, last_token_only = False, device = 'cpu'):
         self.length = length
         self.num_symbols = num_symbols
         self.split = split
@@ -116,7 +116,7 @@ class ngrams(Dataset):
                 
                 output[:,ind] = torch.multinomial(temp,1).squeeze()
 
-            x = output[:, :-1]
+        x = output[:, :-1]
 
         if self.split == 'train':
             y = output[:, 1:]
