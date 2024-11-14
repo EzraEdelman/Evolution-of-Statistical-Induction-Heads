@@ -85,9 +85,9 @@ class ngrams(Dataset):
         stationary_distributions = self.stationary_distribution(transition_matrices)
 
         #generate sequence
-        output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, device = self.device)
+        output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, pin_memory=True)
         output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
-        cons = torch.arange(len(transition_matrices), device = self.device) * self.num_symbols ** self.n
+        cons = torch.arange(len(transition_matrices), pin_memory=True) * self.num_symbols ** self.n
         for ind in range(self.n, self.length):
             if self.n == 1:
                 temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
