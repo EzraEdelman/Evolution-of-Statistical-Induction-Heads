@@ -22,8 +22,7 @@ def stationary_distribution(P):
           for a in range(len(pi_next)):
             if not torch.allclose(pi_next[a], pi[a]):
               print(P[a])
-              print(pi[a])
-              print(pi_next[a])
+              print(pi[a]-pi_next[a])
               exit()
           print("OH NO NO")
           exit()
