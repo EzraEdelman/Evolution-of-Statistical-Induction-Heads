@@ -127,9 +127,6 @@ class ngrams(Dataset):
             y = zip(transition_matrices, output[:, 1:])
         else:
             raise ValueError("Invalid split, this should not be possible unless split was changed after initialization")
-        for i in tuple(zip(x,y)):
-            print(i)
-            break
         return tuple(zip(x,y))
     
     def multi_symbol_convert(self, l):
