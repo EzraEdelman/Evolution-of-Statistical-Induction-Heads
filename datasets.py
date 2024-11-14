@@ -19,10 +19,11 @@ class ngrams(Dataset):
     Dataset for the in context markov learning. Each example is a series of outputs from a markov chain
     """
 
-    def __init__(self, split:str, n:int, length = 101, num_symbols = 2, size = 1000, last_token_only = False, device = 'cpu'):
+    def __init__(self, split:str, n:int, length = 101, num_symbols = 2, size = 1000, last_token_only = False, device = 'cpu', offline=False):
         self.length = length
         self.num_symbols = num_symbols
         self.split = split
+        self.offline = offline
         assert split in ['train', 'test'], f"split must be 'train' or 'test' not {split}"
         self.size = size
         self.last_token_only = last_token_only
@@ -35,7 +36,7 @@ class ngrams(Dataset):
 
         self.conv = torch.tensor([num_symbols ** k for k in range(self.n)])
 
-        if self.split == "train":
+        if self.offline:
             indices = list(range(size))
             transition_matrices = self.transition_matrix_gen([len(indices)])
             stationary_distributions = self.stationary_distribution(transition_matrices)
@@ -102,7 +103,7 @@ class ngrams(Dataset):
 
         #generate sequence
         # rand = torch.rand(self.length)
-        if self.split == "train":
+        if self.offline:
             output = self.output[indices]
         else:
             output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, device = self.device)
@@ -127,7 +128,7 @@ class ngrams(Dataset):
             y = zip(transition_matrices, output[:, 1:])
         else:
             raise ValueError("Invalid split, this should not be possible unless split was changed after initialization")
-        return torch.stack((x,y))#tuple(zip(x,y))
+        return tuple(zip(x,y))
     
     def multi_symbol_convert(self, l):
         # assert len(l) == self.n-1
