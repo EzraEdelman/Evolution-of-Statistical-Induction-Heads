@@ -17,7 +17,7 @@ def stationary_distribution(P):
         i += 1
         pi = pi_next
         pi_next = torch.matmul(pi, P)
-        if i >= 1000:
+        if i >= 10:
           print("OH NO")
           print(P)
           print(pi)
