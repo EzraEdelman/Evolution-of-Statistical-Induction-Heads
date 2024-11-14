@@ -11,6 +11,20 @@ def stationary_distribution(P):
       pi = torch.ones((P.size(0), 1, P.size(1)), device=P.device, dtype=P.dtype) / P.size(0)
     else:
       raise ValueError(f"P has shape {P.size()}, but P must be 2D or 3D tensor")
+    if P.size(-1) < 5:
+      device = P.device
+      P = P.cpu().numpy()
+      evals, evecs = np.linalg.eig(P.T)
+      evec1 = evecs[:,np.isclose(evals, 1)]
+
+      #Since np.isclose will return an array, we've indexed with an array
+      #so we still have our 2nd axis.  Get rid of it, since it's only size 1.
+      evec1 = evec1[:,0]
+
+      stationary = evec1 / evec1.sum()
+
+      #eigs finds complex eigenvalues and eigenvectors, so you'll want the real part.
+      return torch.from_numpy(stationary.real).pin_memory().to(device, non_blocking=True)
     pi_next = torch.matmul(pi, P)
     i = 0
     while not torch.allclose(pi_next, pi, atol = 1e-4, rtol = 1e-4):
