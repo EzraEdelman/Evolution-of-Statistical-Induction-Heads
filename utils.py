@@ -20,10 +20,10 @@ def stationary_distribution(P):
         if i >= 10:
           print("OH NO")
           for a in range(len(pi_next)):
-            if not torch.allclose(pi_next[a], pi[a]):
+            if not torch.allclose(pi_next[a], pi[a], atol=1e-5):
+              exit()
               print(P[a])
               print(pi[a]-pi_next[a])
-              exit()
           print("OH NO NO")
           exit()
     pi = torch.matmul(pi_next, P).squeeze()
