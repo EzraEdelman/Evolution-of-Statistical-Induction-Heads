@@ -36,24 +36,7 @@ class ngrams(Dataset):
 
         self.conv = torch.tensor([num_symbols ** k for k in range(self.n)])
 
-        if self.offline:
-            indices = list(range(size))
-            transition_matrices = self.transition_matrix_gen([len(indices)])
-            stationary_distributions = self.stationary_distribution(transition_matrices)
-
-            #generate sequence
-            # rand = torch.rand(self.length)
-            output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long)
-            output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
-            cons = torch.arange(len(transition_matrices)) * self.num_symbols ** self.n
-            for ind in range(self.n, self.length):
-                if self.n == 1:
-                    temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
-                else:
-                    temp = transition_matrices.flatten(end_dim=1)[cons + self.multi_symbol_convert(output[:,ind-self.n:ind])]
-                
-                output[:,ind] = torch.multinomial(temp,1).squeeze()
-            self.output = output.pin_memory().to(device, non_blocking=True)
+        
     def __len__(self):
         return self.size
 
@@ -102,20 +85,16 @@ class ngrams(Dataset):
         stationary_distributions = self.stationary_distribution(transition_matrices)
 
         #generate sequence
-        # rand = torch.rand(self.length)
-        if self.offline:
-            output = self.output[indices]
-        else:
-            output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, device = self.device)
-            output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
-            cons = torch.arange(len(transition_matrices), device = self.device) * self.num_symbols ** self.n
-            for ind in range(self.n, self.length):
-                if self.n == 1:
-                    temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
-                else:
-                    temp = transition_matrices.flatten(end_dim=1)[cons + self.multi_symbol_convert(output[:,ind-self.n:ind])]
-                
-                output[:,ind] = torch.multinomial(temp,1).squeeze()
+        output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, device = self.device)
+        output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
+        cons = torch.arange(len(transition_matrices), device = self.device) * self.num_symbols ** self.n
+        for ind in range(self.n, self.length):
+            if self.n == 1:
+                temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
+            else:
+                temp = transition_matrices.flatten(end_dim=1)[cons + self.multi_symbol_convert(output[:,ind-self.n:ind])]
+            
+            output[:,ind] = torch.multinomial(temp,1).squeeze()
 
         x = output[:, :-1]
 
@@ -155,53 +134,6 @@ class ngrams(Dataset):
         # Compute the digits in base num_symbols
         out = (m_expanded // self.powers) % self.num_symbols  # Shape: (batch_size, n)
         return out
-    
-
-
-class ngramArrows(ngrams):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.length = self.length * 2
-    
-    def __getitem__(self, index):
-        x, y= self.__get_items__([index])
-        print(x,y)
-        return x[0], y[0]
-
-    def __getitems__(self, indices):
-        transition_matrices = self.transition_matrix_gen([len(indices)])
-        stationary_distributions = self.stationary_distribution(transition_matrices)
-
-        #generate sequence
-        # rand = torch.rand(self.length)
-        output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long)#, device = self.device)
-        output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
-        # cons = torch.arange(len(transition_matrices), device = self.device) * self.num_symbols ** self.n
-        cons = torch.arange(len(transition_matrices)) * self.num_symbols ** self.n
-        for ind in range(self.n, self.length):
-            if self.n == 1:
-                temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
-            else:
-                temp = transition_matrices.flatten(end_dim=1)[cons + self.multi_symbol_convert(output[:,ind-self.n:ind])]
-            
-            output[:,ind] = torch.multinomial(temp,1).squeeze()
-        extended = torch.zeros(output.size(0), output.size(1) * 2)#, device = output.device)
-        extended[:, ::2] = output+1
-
-
-
-        x = output[:, :-1]
-
-        if self.split == 'train':
-            y = output[:, 1:]
-            if (self.last_token_only):
-                y = torch.ones_like(y) * -1
-                y[:, -1] = output[:, -1]
-        elif self.split == 'test':
-            y = zip(transition_matrices, output[:, 1:])
-        else:
-            raise ValueError("Invalid split, this should not be possible unless split was changed after initialization")
-        return x,y#tuple(zip(x,y))
 
 import warnings
 class doubly_stochastic(ngrams):

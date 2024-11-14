@@ -42,7 +42,6 @@ def get_default_config():
     C.dataset = None
     C.n = 2
     C.attention_only = True
-    C.offline = False
     return C
 
 def train(config=get_default_config()):
@@ -58,7 +57,6 @@ def train(config=get_default_config()):
     train_config = Trainer.get_default_config()
     train_config.max_iters = config.max_iters
     train_config.num_workers = 6
-    train_config.offline = config.offline
     train_config.batch_size = config.batch_size
     name = config.model_type.lower()
     if config.learning_rate is not None:
