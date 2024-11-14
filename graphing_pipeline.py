@@ -274,7 +274,7 @@ def similarity(datem, config, axis = None):
     # Your existing axis setup code...
     # # axis.set_xlim(-1, len(curves[0])+1)
     # axis.set_xlim(x[0], x[-1])  # Adjusting the x-limits to the logarithmic scale
-    # axis.set_ylim(0, np.max(curves))  # Adjusting the x-limits to the logarithmic scale
+    axis.set_ylim(0, np.max(curves)) 
     # # axis.set_title(f'{config.model_type} KL-Divergence: {config.vocab_size} Symbols')
     axis.set_title(f'Distance between model predictions\n and candidate strategies\n{config.model_type} {config.n_layer} layers')
     tick_n = 5
