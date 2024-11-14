@@ -29,10 +29,10 @@ class ngrams(Dataset):
         self.last_token_only = last_token_only
         self.device = device
         self.n = n - 1
-        self.transition_matrix_gen = torch.distributions.dirichlet.Dirichlet(torch.ones((num_symbols**(n-1),num_symbols))).sample
+        self.transition_matrix_gen = torch.distributions.dirichlet.Dirichlet(torch.ones((num_symbols**(n-1),num_symbols), device = device)).sample
         
         # Compute powers of num_symbols
-        self.powers = self.num_symbols ** torch.arange(self.n - 1, -1, -1, dtype=torch.long)  # Shape: (n,)
+        self.powers = self.num_symbols ** torch.arange(self.n - 1, -1, -1, device=device, dtype=torch.long)  # Shape: (n,)
 
         self.conv = torch.tensor([num_symbols ** k for k in range(self.n)])
 
@@ -85,9 +85,9 @@ class ngrams(Dataset):
         stationary_distributions = self.stationary_distribution(transition_matrices)
 
         #generate sequence
-        output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, pin_memory=True)
+        output = torch.zeros((len(transition_matrices), self.length), dtype=torch.long, device = self.device)
         output[:, :self.n] =self.single_symbol_convert(torch.multinomial(stationary_distributions, 1).squeeze())
-        cons = torch.arange(len(transition_matrices), pin_memory=True) * self.num_symbols ** self.n
+        cons = torch.arange(len(transition_matrices), device = self.device) * self.num_symbols ** self.n
         for ind in range(self.n, self.length):
             if self.n == 1:
                 temp = transition_matrices.flatten(end_dim=1)[cons + output[:,ind-1]]
