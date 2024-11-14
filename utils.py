@@ -21,6 +21,7 @@ def stationary_distribution(P):
           print("OH NO")
           print(P)
           print(pi)
+          print(pi_next)
           exit()
     pi = torch.matmul(pi_next, P).squeeze()
     return pi / pi.sum(axis=-1, keepdim=True)
