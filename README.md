@@ -1,6 +1,6 @@
 # The Evolution of Statistical Induction Heads: In-Context Learning Markov Chains
 
-[![Paper](https://img.shields.io/badge/NeurIPS-2024-blue)](https://arxiv.org/abs/2402.11004)
+[![Paper](https://img.shields.io/badge/NeurIPS-2024-blue)](https://proceedings.neurips.cc/paper_files/paper/2024/hash/75b0edb869e2cd509d64d0e8ff446bc1-Abstract-Conference.html)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Official implementation of **"The Evolution of Statistical Induction Heads: In-Context Learning Markov Chains"** (NeurIPS 2024).
